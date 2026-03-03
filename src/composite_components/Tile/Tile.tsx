@@ -234,6 +234,7 @@ export enum TileTestIds {
 const Tile = (props: TilePropsType) => {
   const [isChecked, setIsChecked] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isImageLoadFailed, setIsImageLoadFailed] = useState(false);
   const titleRef = useRef<HTMLDivElement | null>(null);
   const subTitleRef = useRef<HTMLDivElement | null>(null);
   const [isTitleOverflowing, setIsTitleOverflowing] = useState(false);
@@ -274,14 +275,24 @@ const Tile = (props: TilePropsType) => {
 
   const handleImageLoad = () => {
     setIsImageLoaded(true);
+    setIsImageLoadFailed(false);
+  };
+
+  const handleImageError = () => {
+    setIsImageLoadFailed(true);
+    setIsImageLoaded(false);
   };
 
   useEffect(() => {
+    setIsImageLoaded(false);
+    setIsImageLoadFailed(false);
+
     const img = new Image();
     if (imageUrl) {
       img.src = imageUrl;
     }
     img.onload = handleImageLoad;
+    img.onerror = handleImageError;
   }, [imageUrl]);
 
   const contextValue = useMemo(() => {
@@ -314,7 +325,7 @@ const Tile = (props: TilePropsType) => {
           </StyledLockNotice>
         )}
 
-        {(imageUrl && !avatar && hasThumbnail) && (
+        {(imageUrl && !avatar && hasThumbnail && isImageLoaded && !isImageLoadFailed) && (
           <ImageContainer>
             <img
               style={{
@@ -325,6 +336,7 @@ const Tile = (props: TilePropsType) => {
               }}
               src={imageUrl}
               alt={imageAltName || ''}
+              onError={handleImageError}
             />
             {!disabled && (
               <Overlay className={`overlay ${isOverlayVisible ? 'visible' : ''}`}>
@@ -343,7 +355,7 @@ const Tile = (props: TilePropsType) => {
             )}
           </ImageContainer>
         )}
-        {(imageUrl && avatar) && (isImageLoaded && hideAvatarIfImageIsLoaded) && (hasThumbnail) && (
+        {(imageUrl && avatar) && (isImageLoaded && !isImageLoadFailed && hideAvatarIfImageIsLoaded) && (hasThumbnail) && (
           <ImageContainer>
             <img
               style={{
@@ -354,6 +366,7 @@ const Tile = (props: TilePropsType) => {
               }}
               src={imageUrl}
               alt={imageAltName || ''}
+              onError={handleImageError}
             />
             {!disabled && (
               <Overlay className={`overlay ${isOverlayVisible ? 'visible' : ''}`}>
@@ -372,7 +385,7 @@ const Tile = (props: TilePropsType) => {
             )}
           </ImageContainer>
         )}
-        {(imageUrl && avatar) && (!hideAvatarIfImageIsLoaded || (!isImageLoaded)) && (hasThumbnail) && (
+        {(imageUrl && avatar) && (!hideAvatarIfImageIsLoaded || !isImageLoaded || isImageLoadFailed) && (hasThumbnail) && (
           <ImageContainer>
             <StyledBox>
               {avatar}
