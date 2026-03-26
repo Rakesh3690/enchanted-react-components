@@ -286,11 +286,14 @@ const StyledMuiFormControl = styled(MuiFormControl)((theme) => {
 
 const getStartAdornment = (props: TextFieldProps, isComboBox: boolean) => {
   if (props.InputProps?.startAdornment) {
-    // For comboBox (Autocomplete), startAdornment may contain chips from MUI's
-    // multiple mode or custom icons already wrapped by Autocomplete.
-    // Pass through as-is to avoid double-wrapping in InputAdornment which
-    // constrains chips to fixed height and breaks chip layout.
-    return props.InputProps.startAdornment;
+    if (!isComboBox) {
+      return props.InputProps.startAdornment;
+    }
+    return (
+      <InputAdornment position="start">
+        {props.InputProps.startAdornment}
+      </InputAdornment>
+    );
   }
   return null;
 };
